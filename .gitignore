@@ -1,0 +1,7 @@
+*.sqlite
+
+*.json
+
+__pycache__/
+
+convert_amount_to_float.py
