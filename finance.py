@@ -1,6 +1,9 @@
+import datetime
+
 import json
 import sqlite3
 import os
+import subprocess
 from prettytable import PrettyTable
 from finance_db import FinanceDB
 
@@ -107,7 +110,8 @@ def make_transaction(account: Account, fin_db: FinanceDB):
     item = add_item(account.get_account_id(), "Withdrawal")
 
     account.items.append(item)
-    fin_db.add_item(item.date_entered, item.description, item.pay_type, item.transaction_type, item.amount, item.check_num)
+    fin_db.add_item(item.date_entered, item.description, item.pay_type, item.transaction_type, item.amount,
+                    item.check_num)
 
 
 def add_item(account_id: int, trans_type: str) -> Item:
@@ -159,8 +163,8 @@ def bills_menu():
         user_selection = input("\nSelection: ")
 
         if user_selection == '1' or user_selection == '3':
-            if os.path.isfile(os.path.dirname(__file__) + "/bills.json"):
-                with open(os.path.dirname(__file__) + "/bills.json") as bills_file:
+            if os.path.isfile(os.path.dirname(__file__) + f"/json/month_{datetime.datetime.now().month}/bills.json"):
+                with open(os.path.dirname(__file__) + f"/json/month_{datetime.datetime.now().month}/bills.json") as bills_file:
                     bills = json.load(bills_file)
 
                 print_bills(bills)
@@ -168,7 +172,7 @@ def bills_menu():
                 bill = input("Enter name of Bill to be deleted: ")
                 if bill in bills:
                     del bills[bill]
-                    with open(os.path.dirname(__file__) + "/bills.json", 'w') as bills_file:
+                    with open(os.path.dirname(__file__) + f"/json/month_{str(datetime.datetime.now().month)}/bills.json", 'w') as bills_file:
                         json.dump(bills, bills_file)
         elif user_selection == '2':
             bill_name = input("\nBill name: ")
@@ -177,9 +181,109 @@ def bills_menu():
 
             bills[bill_name] = {"Amount": bill_amount, "Due by": bill_due}
 
-            with open(os.path.dirname(__file__) + "/bills.json", 'w') as bills_file:
+            with open(os.path.dirname(__file__) + f"/json/month_{str(datetime.datetime.now().month)}/bills.json", 'w') as bills_file:
                 json.dump(bills, bills_file)
 
         elif user_selection == '4':
             loopin = False
 
+
+def budget_menu():
+    loopin = True
+
+    while loopin:
+        print("1.New Budget\n"
+              "2.View Existing Budget\n"
+              "3.Main Menu")
+        user_selection = input("\nSelection: ")
+
+        if int(user_selection) == 1:
+            _calculate_budget()
+
+        if int(user_selection) == 2:
+            view_budget()
+
+        if int(user_selection) == 3:
+            loopin = False
+
+
+def _calculate_budget():
+    bills = []
+    expenses = []
+    bills_per_paycheck = []
+
+    bills_path = f"{os.path.dirname(__file__)}/json/month_{str(datetime.datetime.now().month)}/bills.json"
+    income_path = f"{os.path.dirname(__file__)}/json/month_{str(datetime.datetime.now().month)}/income.json"
+    paychecks = gather_income()
+
+    dir_month_exists = verify_file_dir_exists(f"{os.path.dirname(__file__)}/json/{str()}", "dir")
+
+    if not dir_month_exists:
+        subprocess.run(f"mkdir {os.path.dirname(__file__)}/json/month_{datetime.datetime.now().month}")
+    bills_exist = verify_file_dir_exists(bills_path, "file")
+    income_exist = verify_file_dir_exists(income_path, "file")
+
+    if not (bills_exist and income_exist):
+        print("Need to add bills before you can start budget")
+        return
+
+    # load in bills.json into bills
+    with open(bills_path, 'r') as bills_json:
+        bills = json.load(bills_json)
+    # Ask if there's other expenses need to be included
+
+    other_expenses = input("Aside from bills....\nIs there anything else you want included in the budget?(y/n) -> ")
+
+    while other_expenses != 'y' and other_expenses != 'n':
+        print("NOPE")
+        print("Try again\n\n")
+        other_expenses = input("Aside from bills...\nIs there anything else you want included in the budget?(y/n) ->")
+    # calculate bills per paycheck
+
+    # print results
+
+    # Create budget.json and store bills per paycheck
+    pass
+
+
+def view_budget():
+    # check for budget.json
+
+    # if file exists, load it in, else print statement
+
+    # display budget
+
+    pass
+
+
+def gather_income() -> list:
+    """
+    Gather all income for the month, and stores data in /json/month/income.json
+    Return: list of all income (list({'Amount': str(), 'Day': str()})
+    """
+    income = []
+
+    num_of_paychecks = int(input("How many paychecks will you have for this month? -> "))
+
+    for num in range(num_of_paychecks):
+        amount = input(f"Amount for Paycheck #{num + 1} -> $")
+        date = input(f"Day of Paycheck #{num + 1} -> ")
+        income.append({"Amount": amount, "Day": date})
+
+    # Store income data
+    with open(os.path.dirname(__file__) + f"/json/month_{str(datetime.datetime.now().month)}/income.json", 'w') as income_json:
+        json.dump(income, income_json)
+
+    return income
+
+
+def verify_file_dir_exists(path: str, type: str) -> bool:
+    if type == "file":
+        if os.path.isfile(path):
+            return True
+
+    if type == "dir":
+        if os.path.isdir(path):
+            return True
+
+    return False

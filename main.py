@@ -11,7 +11,8 @@ methods = {
     2: finance.make_deposit,
     3: finance.make_transaction,
     4: finance.bills_menu,
-    5: exit
+    5: finance.budget_menu,
+    6: exit
 }
 
 
@@ -25,7 +26,8 @@ def main_menu():
           "\n2. Make Deposit"
           "\n3. Make Transaction"
           "\n4. Bills Lookup"
-          "\n5. Exit")
+          "\n5. Budget Menu"
+          "\n6. Exit")
 
 
 def deposit_menu():
@@ -50,6 +52,7 @@ def main():
     else:
         account_1 = finance.get_account(fin_db.get_account("Spencer"))
 
+    # TODO: ADD Statement to create /json/months dir
     account_1.populate_items(fin_db)
 
     while keep_loopin:
@@ -58,14 +61,16 @@ def main():
         while user_selection < 1 or user_selection > 5:
             greeting()
             main_menu()
-            user_selection = int(input("\nSELECTION(1-5):"))
+            user_selection = int(input("\nSELECTION(1-6):"))
 
-            if user_selection in range(1, 6):
+            if user_selection in range(1, 7):
                 if user_selection == 2 or user_selection == 3:
                     methods[user_selection](account_1, fin_db)
                 elif user_selection == 4:
                     methods[user_selection]()
                 elif user_selection == 5:
+                    methods[user_selection]()
+                elif user_selection == 6:
                     methods[user_selection]("\nHAVE A LOVELY DAY")
                 else:
                     methods[user_selection](account_1)
