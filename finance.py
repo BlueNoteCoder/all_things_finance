@@ -164,7 +164,8 @@ def bills_menu():
 
         if user_selection == '1' or user_selection == '3':
             if os.path.isfile(os.path.dirname(__file__) + f"/json/month_{datetime.datetime.now().month}/bills.json"):
-                with open(os.path.dirname(__file__) + f"/json/month_{datetime.datetime.now().month}/bills.json") as bills_file:
+                with open(os.path.dirname(
+                        __file__) + f"/json/month_{datetime.datetime.now().month}/bills.json") as bills_file:
                     bills = json.load(bills_file)
 
                 print_bills(bills)
@@ -172,7 +173,9 @@ def bills_menu():
                 bill = input("Enter name of Bill to be deleted: ")
                 if bill in bills:
                     del bills[bill]
-                    with open(os.path.dirname(__file__) + f"/json/month_{str(datetime.datetime.now().month)}/bills.json", 'w') as bills_file:
+                    with open(
+                            os.path.dirname(__file__) + f"/json/month_{str(datetime.datetime.now().month)}/bills.json",
+                            'w') as bills_file:
                         json.dump(bills, bills_file)
         elif user_selection == '2':
             bill_name = input("\nBill name: ")
@@ -181,7 +184,8 @@ def bills_menu():
 
             bills[bill_name] = {"Amount": bill_amount, "Due by": bill_due}
 
-            with open(os.path.dirname(__file__) + f"/json/month_{str(datetime.datetime.now().month)}/bills.json", 'w') as bills_file:
+            with open(os.path.dirname(__file__) + f"/json/month_{str(datetime.datetime.now().month)}/bills.json",
+                      'w') as bills_file:
                 json.dump(bills, bills_file)
 
         elif user_selection == '4':
@@ -211,15 +215,11 @@ def _calculate_budget():
     bills = []
     expenses = []
     bills_per_paycheck = []
+    paychecks = gather_income()  # list of paychecks
 
     bills_path = f"{os.path.dirname(__file__)}/json/month_{str(datetime.datetime.now().month)}/bills.json"
     income_path = f"{os.path.dirname(__file__)}/json/month_{str(datetime.datetime.now().month)}/income.json"
-    paychecks = gather_income()
 
-    dir_month_exists = verify_file_dir_exists(f"{os.path.dirname(__file__)}/json/{str()}", "dir")
-
-    if not dir_month_exists:
-        subprocess.run(f"mkdir {os.path.dirname(__file__)}/json/month_{datetime.datetime.now().month}")
     bills_exist = verify_file_dir_exists(bills_path, "file")
     income_exist = verify_file_dir_exists(income_path, "file")
 
@@ -232,13 +232,23 @@ def _calculate_budget():
         bills = json.load(bills_json)
     # Ask if there's other expenses need to be included
 
-    other_expenses = input("Aside from bills....\nIs there anything else you want included in the budget?(y/n) -> ")
+    other_expenses_option = input(
+        "Aside from bills....\nIs there anything else you want included in the budget?(y/n) -> ").lower()
 
-    while other_expenses != 'y' and other_expenses != 'n':
+    while other_expenses_option != 'y' and other_expenses_option != 'n':
         print("NOPE")
         print("Try again\n\n")
-        other_expenses = input("Aside from bills...\nIs there anything else you want included in the budget?(y/n) ->")
+        other_expenses_option = input(
+            "Aside from bills...\nIs there anything else you want included in the budget?(y/n) ->")
+
+    if other_expenses_option == 'y':
+        pass
+        # prompt for expense
+        # prompt for date
+        # store in expenses list
+
     # calculate bills per paycheck
+    bills_per_paycheck = calculate_bills_to_paycheck(bills, paychecks, expenses)
 
     # print results
 
@@ -271,18 +281,27 @@ def gather_income() -> list:
         income.append({"Amount": amount, "Day": date})
 
     # Store income data
-    with open(os.path.dirname(__file__) + f"/json/month_{str(datetime.datetime.now().month)}/income.json", 'w') as income_json:
+    with open(os.path.dirname(__file__) + f"/json/month_{str(datetime.datetime.now().month)}/income.json",
+              'w') as income_json:
         json.dump(income, income_json)
 
     return income
 
 
-def verify_file_dir_exists(path: str, type: str) -> bool:
-    if type == "file":
+def calculate_bills_to_paycheck(bills: list, paychecks: list, expenses: list) -> list:
+    num_of_paychecks = len(paychecks)
+
+    # Sort lists based off of Day
+    paychecks.sort(key=lambda x: int(x["Day"]))
+    print(paychecks)
+
+
+def verify_file_dir_exists(path: str, selection: str) -> bool:
+    if selection == "file":
         if os.path.isfile(path):
             return True
 
-    if type == "dir":
+    if selection == "dir":
         if os.path.isdir(path):
             return True
 
