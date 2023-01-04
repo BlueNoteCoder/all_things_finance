@@ -1,6 +1,9 @@
+import datetime
+
 import finance
 import finance_db
 import os
+import subprocess
 from finance_db import FinanceDB
 
 PATH_OF_SCRIPT = os.path.dirname(__file__)
@@ -52,7 +55,12 @@ def main():
     else:
         account_1 = finance.get_account(fin_db.get_account("Spencer"))
 
-    # TODO: ADD Statement to create /json/months dir
+    if not os.path.isdir(os.path.dirname(__file__) + f"/json/month_{datetime.datetime.now().month}"):
+        print(f"Creating month necessary month folder in json directory")
+        os.makedirs(f"{os.path.dirname(__file__)}/json/month_{datetime.datetime.now().month}")
+        print(f"Created {os.path.dirname(__file__)}/json/month_{datetime.datetime.now().month} directory")
+    else:
+        print(f"json/month_{datetime.datetime.now().month} directory already exists")
     account_1.populate_items(fin_db)
 
     while keep_loopin:
